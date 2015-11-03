@@ -1,0 +1,21 @@
+{
+  "name": "Node Project",
+  "version": "0.0.0",
+  "authors": [],
+  "license": "MIT",
+  "ignore": [
+    "**/.*",
+    "node_modules",
+    "bower_components",
+    "../src/client/vendor"
+  ],
+  "devDependencies": {},
+  "dependencies": {
+    "jquery": "~2.1.4",
+    "underscore": "~1.8.3",
+    "q": "1.0.1",
+    "backbone": "~1.2.1",
+    "modernizr": "~2.8.3",
+    "almond": "~0.3.1"
+  }
+}
