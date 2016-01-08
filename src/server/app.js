@@ -14,7 +14,7 @@ var index = require('./routes/index');
  * @private
  */
 
- var app = express();
+var app = express();
 
 /**
  * Module exports.
@@ -23,13 +23,18 @@ var index = require('./routes/index');
 
 module.exports = app;
 
-
 /**
  * Extending the app for the parsing json
  */
 
 app.use(bodyParser.json());
-app.use(bodyParser.urlencoded({ extended: true }));
+app.use(bodyParser.urlencoded({extended: true}));
+
+app.use(function(req, res, next) {
+  res.header('Access-Control-Allow-Origin', '*');
+  res.header('Access-Control-Allow-Headers', 'Origin, X-Requested-With, Content-Type, Accept');
+  next();
+});
 
 /**
  * Importing base route
@@ -47,5 +52,5 @@ app.set('view engine', 'jade');
 /**
  * Extending the app for using public as folder for static files
  */
- 
+
 app.use(express.static(path.join(__dirname, 'public')));

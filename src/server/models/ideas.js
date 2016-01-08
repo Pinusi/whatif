@@ -4,7 +4,6 @@
  * @private
  */
 
-var DatabaseConnection = require("../middlewares/dbconnector");
 var Q = require('q');
 
 /**
@@ -14,11 +13,11 @@ var Q = require('q');
 
 module.exports = Ideas;
 
-function Ideas()
-{ 
-	//get the full list
-	this.data = [];
-	this.page = [];
+function Ideas(_connection) {
+  //get the full list
+  this.data = [];
+  this.page = [];
+  this.connection = _connection;
 };
 
 /**
@@ -27,35 +26,29 @@ function Ideas()
  * @order: nothing ( as they get ), latest ( ordered by date )
  */
 
-Ideas.prototype.update = function( _order )
-{
-	var query = '',
-		deferred = Q.defer();
+Ideas.prototype.update = function(_order) {
+  var query = '',
+  that = this;
 
-	//clean data
-	this.data = [];
+  //clean data
+  this.data = [];
 
-	//query
-	switch( _order )
-	{
-		case 'latest':
-			query = "SELECT * FROM Ideas ORDER BY Date";
-			break;
+  //query
+  switch (_order)
+  {
+    case 'latest':
+      query = 'SELECT * FROM Ideas ORDER BY Date';
+      break;
 
-		default:
-			query = "SELECT * FROM Ideas";
-	};
+    default:
+      query = 'SELECT * FROM Ideas';
+  };
 
-	//request data from db
-	DatabaseConnection.db.serialize(function() {
-		DatabaseConnection.db.each( query, function( err, row )
-		{
-			that.data.push( row );
-		}, deferred.resolve );
-	});
+  //request data from db
+  return this.connection.query(query).then(function(data) {
+    this.data = data;
+  }.bind(this));
 
-	//resolve the promise
-	return deferred.promise;
 };
 
 /**
@@ -64,46 +57,34 @@ Ideas.prototype.update = function( _order )
  * @params: idea_per_page, page, sorting
  */
 
-Ideas.prototype.getIdeas = function( _params )
-{
-	var deferred = Q.defer();
+Ideas.prototype.getIdeas = function(_params) {
+  var deferred = Q.defer();
 
-	//update and paginate
-	this.update( _params.sorting )
-		.then(function(){
+  if (!_params || _params.idea_per_page === undefined || _params.page === undefined) {
+    deferred.reject('missing params');
+    return deferred.promise;
+  } else {
+    //update and paginate
+    return this.update(_params.sorting)
+			.then(function() {
+  //paginate
+  return this.paginate(_params.idea_per_page, _params.page);
 
-			//paginate
-			var page = this.paginate( _params.idea_per_page, _params.page );
-
-			//solve the promise
-			deferred.resolve( page );
-
-		}.bind(this));
-
-	return deferred.promise;
+			}.bind(this));
+  }
 };
-
 
 /**
  * getIdeaByID.
  * return @Object = { ID: id,  }
  */
 
-Ideas.prototype.getIdeaByID = function( _id )
-{
-	var deferred = Q.defer();
-
-	//update and paginate
-	this.update()
-		.then(function(){
-			var idea = this.findIdea( _id );
-
-			//solve the promise
-			deferred.resolve( idea );
-
+Ideas.prototype.getIdeaByID = function(_id) {
+  //update and paginate
+  return this.update()
+		.then(function() {
+      return idea = this.findIdea(_id);
 		}.bind(this));
-
-	return deferred.promise;
 };
 
 /**
@@ -111,37 +92,46 @@ Ideas.prototype.getIdeaByID = function( _id )
  * paginate the ideas and put them into page variable
  */
 
-Ideas.prototype.paginate = function( _perpage, _page )
-{
-	//clean page
-	var page = [];
+Ideas.prototype.paginate = function(_perpage, _page) {
+  if (_perpage === undefined || _page === undefined || typeof _page !== 'number' || typeof _perpage !== 'number') {
+    return;
+  }
 
-	//starting point
-	var starting_idea = _perpage * _page;
+  //clean page
+  var page = [];
 
-	//save ideas in the page
-	for ( var i = starting_idea; i < _perpage; i++ ) 
-	{
-		page.push( this.data[i] );
-	};
+  //starting point
+  var starting_idea = _perpage * _page;
+  var limit = _perpage + starting_idea;
 
-	return page;
-}
+  //save ideas in the page
+  for (var i = starting_idea; i < limit; i++) {
+    page.push(this.data[i]);
+  };
 
-Ideas.prototype.findIdea = function( _id ) 
-{
-	var idea;
-
-	for ( var i = 0; i < this.data.length; i++ ) 
-	{	
-		if( this.data[i].ID == _id )
-		{
-			idea = this.data[i];
-		}
-	}
-
-	return idea;
+  return page;
 };
 
-Ideas.prototype.submitIdea = function( idea ) {};
+Ideas.prototype.findIdea = function(_id) {
+  var idea;
+
+  for (var i = 0; i < this.data.length; i++) {
+    if (this.data[i].ID == _id) {
+      idea = this.data[i];
+    }
+  }
+
+  return idea;
+};
+
+Ideas.prototype.submitIdea = function(_params) {
+  if (!_params || !_params.title || !_params.description) {
+    return;
+  }
+
+  var date = _params.date ? new Date(_params.date).getTime() : new Date().getTime();
+  var query = 'INSERT INTO Ideas (Title, Summary, Description, Date) VALUES (\'' + _params.title + '\', \'' + _params.summary + '\', \'' + _params.description + '\', ' + date + ')';
+
+  return this.connection.run(query);
+};
 

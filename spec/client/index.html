@@ -1,0 +1,39 @@
+<!doctype html>
+
+<html>
+
+<head>
+	<title>Test</title>
+    <link rel="stylesheet" href="vendor/mocha.css" />
+</head>
+
+<body>
+
+    <div id="mocha"></div>
+
+    <!-- Vendor Libraries -->
+    <script src="./vendor/mocha.js"></script> 
+    <script src="./vendor/chai.js"></script>
+    <script src="./vendor/sinon.js"></script>
+
+    <!-- Source code -->
+    <script src="../../build/client/js/script.min.js"></script>
+
+    <!-- Setup -->
+    <script>mocha.setup('bdd')</script>
+    <script>expect = chai.expect</script>
+
+    <!-- Tests -->
+
+    <script src="./main.test.js"></script>
+
+    <!-- Init -->
+	<script>
+        if (navigator.userAgent.indexOf('PhantomJS') < 0) {
+		  mocha.run();
+        }
+	</script>
+
+</body>
+
+</html>

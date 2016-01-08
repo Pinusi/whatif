@@ -1,0 +1,76 @@
+body{
+	font-family: 'Judson', serif;
+}
+
+p{
+	margin: 0px;
+}
+
+a{
+	text-decoration: none;
+	cursor: pointer;
+	color: $black;
+}
+
+.button{
+	background-color: $yellow;
+	@include font-dimensions(18, 20);
+	text-align: center;
+	text-transform: uppercase;
+	@include flex-padding( 20,20,20,20 );
+}
+
+.loadmore{
+	position: absolute;
+	left: 50%;
+	
+}
+
+.header{
+	width: 100%;
+	font-family: 'Quando', serif;
+	@include flex-padding( 20,60,20,60 );
+	@include font-dimensions(50, 60);
+	background-color: $yellow;
+}
+
+.menu{
+	width: 100%;
+	font-family: 'Quando', serif;
+	@include flex-height( 53 );
+	background-color: $black;
+	border-bottom: solid 5px $dark-grey;
+
+	a{
+		width: 50%;
+		display: block;
+		float: left;
+		color: $white;
+		text-align: center;
+		@include font-dimensions(23, 53);
+		
+		&:hover{
+			color: $yellow;
+		}
+
+	}
+}
+
+.list{
+	@include flex-margin( 20,60,20,60 );
+
+	.idea{
+		width: 100%;
+		@include box-sizing(border-box);
+		border: solid 1px $grey;
+		@include flex-margin( 0,0,20,0 );
+		@include flex-padding( 20,20,20,20 );
+
+		.title{
+			font-weight: 800;
+			text-transform: uppercase;
+			letter-spacing: 0.05rem;
+			@include flex-margin( 0,0,4,0 );
+		}
+	}
+}

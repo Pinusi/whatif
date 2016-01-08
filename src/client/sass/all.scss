@@ -1,3 +1,20 @@
-.prova{
-	background-color: white;
-}
+/**
+  COMMON VARIABLES
+**/
+$rem: 16;
+
+/**
+  UTILS
+**/
+@import "partials/mixins";
+
+/**
+  COMMON
+**/
+@import "partials/fonts";
+@import "partials/colors";
+
+/**
+  SITE
+**/
+@import "partials/layout";

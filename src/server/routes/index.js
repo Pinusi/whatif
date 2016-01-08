@@ -27,8 +27,5 @@ router.use('/api/user', require('./user'));
 /**
  * Extending the router for the route /
  */
- 
-router.get('/', function( req, res )
-{
-	res.render('index');
-});
+
+router.get('/', function(req, res) {});

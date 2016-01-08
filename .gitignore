@@ -2,3 +2,4 @@ build
 tools/.sass-cache
 tools/node_modules
 tools/.rebooted
+**/.DS_Store

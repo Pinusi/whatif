@@ -4,7 +4,6 @@
  * @private
  */
 
-var DatabaseConnection = require("../middlewares/dbconnector");
 var Q = require('q');
 
 /**
@@ -14,80 +13,55 @@ var Q = require('q');
 
 module.exports = Ratings;
 
-function Ratings()
-{ 
-	//get the full list
-	this.data = [];
+function Ratings(_connection) {
+  //get the full list
+  this.data = [];
+  this.connection = _connection;
 };
 
 /**
  * update.
  * save array from db
  */
-Ratings.prototype.update = function()
-{
-	var query = '',
-		deferred = Q.defer();
+Ratings.prototype.update = function() {
+  var query = 'SELECT * FROM UserIdeaRatings';
 
-	this.data = [];
+  this.data = [];
 
-	DatabaseConnection.db.serialize(function() {
-		DatabaseConnection.db.each("SELECT * FROM UserIdeaRatings", function( err, row )
-		{
-			this.data.push( row );
-		}, deferred.resolve );
-	});
-
-	//resolve the promise
-	return deferred.promise;
+  return this.connection.query(query).then(function(data) {
+    this.data = data;
+  }.bind(this));
 };
 
-/**
- * getAllRatingsGroupedByIdeaID.
- * return @Object = { IdeaID: SumRating }
- */
- 
-Ratings.prototype.getAllRatingsGroupedByIdeaID = function()
-{
-	var ratings_by_ideaid = {};
-	
-	this.update();
+Ratings.prototype.submitRating = function(_params) {
+  if (!_params || !_params.username || !_params.ideaId || !_params.rating) {
+    return;
+  }
 
-	for (var i = 0; i < this.data.length; i++) {
-		if( !ratings_by_ideaid[ this.data[i].IdeaID ] )
-		{
-			ratings_by_ideaid[ this.data[i].IdeaID ] = this.data[i].Rating;
-		}
-		else
-		{
-			ratings_by_ideaid[ this.data[i].IdeaID ] += this.data[i].Rating;
-		}
-	};
+  var date = _params.date ? new Date(_params.date).getTime() : new Date().getTime();
+  var query = 'INSERT INTO UserIdeaRatings (UserID, IdeaID, Rating, Date) VALUES (\'' + _params.username + '\', ' + _params.ideaId + ', ' + _params.rating + ', ' + date + ')';
 
-	return ratings_by_ideaid;
+  return this.connection.run(query);
 };
 
-// Ratings.prototype.getRatingsByPersonID = function( id ) {};
-
-Ratings.prototype.submitRating = function( _params )
-{
-	var query = '',
-		deferred = Q.defer(),
-		date = new Date().getTime();
-
-	var query = "INSERT INTO UserIdeaRatings (UserID, IdeaID, Rating, Date) VALUES ('" + _params.username + "', " + _params.ideaId + ", " + _params.rating + ", " + date + ")";
-
-	DatabaseConnection.db.serialize(function() {
-		DatabaseConnection.db.run(query, function( err ){
-			deferred.resolve( err );
-		});
-	});
-
-	//resolve the promise
-	return deferred.promise;
+Ratings.prototype.getAllRatingsGroupedByUserID = function(_id) {
+  //update and paginate
+  return this.update()
+    .then(function() {
+  return ratings_by_user = this.filterByUser(_id);
+    }.bind(this));
 };
 
+Ratings.prototype.filterByUser = function(_id) //for now userid
+{
+  var ratings_by_user = [];
 
+  for (var i = 0; i < this.data.length; i++) {
+    if (this.data[i].UserID == _id) {
+      ratings_by_user.push(this.data[i]);
+    }
+  }
 
-
+  return ratings_by_user;
+};
 
